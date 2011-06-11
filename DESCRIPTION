@@ -1,0 +1,10 @@
+Package: pasilla
+Title: Differential expression and alternative exon usage using RNA-seq count tables
+Version: 0.1.0
+Author: Wolfgang Huber, Alejandro Reyes
+Maintainer: Alejandro Reyes <reyes@embl.de>
+Description: Processed data from RNA-seq samples and supplementary material from Brooks et al 2010, raw reads data available from NCBI Gene Expression Omnibus under accession numbers GSM461176 to GSM461181
+biocViews: ExperimentData
+License: LGPL
+Depends: 
+Suggests: DESeq, DEXSeq, locfit, edgeR, xtable
