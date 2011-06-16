@@ -52,9 +52,28 @@ print(xtable(tab, caption = "Read numbers and alignment statistics. The column \
 @ 
 
 \section{File Alignment and filtering}
-The FASTQ files were aligned using TopHat version 1.2.0 with default parameters.  Table~\ref{tab:samples} 
+The FASTQ files were aligned using TopHat version 1.2.0 with default parameters against the 
+reference Drosophila melanogaster genome.
 summarizes the read number and alignment statistics.
+Table~\ref{tab:samples} 
 \input{create_objects_tabsamples.tex}
+\subsection{How to generate an alignment with tophat}
+We can build the indexed form of a reference fasta fileto make a bowtie index that is
+required to align the reads with tophat. The reference genomic DNA fasta files can be 
+obtained directly from the ensembl ftp server.  
+\footnote{\url{http://www.ensembl.org/info/data/ftp/index.html}}. Having this we can run bowtie-build to index the
+fasta file, and we now ready to make the alignment. For more detailed information of how to generate this index
+please visit bowtie webpage \footnote{\url{http://bowtie-bio.sourceforge.net/tutorial.shtml}}.
+\scriptsize
+\begin{lstlisting}
+wget \
+ftp://ftp.ensembl.org/pub/release-62/fasta/drosophila_melanogaster/ \
+dna/Drosophila_melanogaster.BDGP5.25.62.dna_rm.toplevel.fa.gz
+
+gunzip Drosophila_melanogaster.BDGP5.25.62.dna_rm.toplevel.fa.gz
+bowtie-build Drosophila_melanogaster.BDGP5.25.62.dna_rm.toplevel.fa d_melanogaster_BDGP5.25.62
+\end{lstlisting}
+\normalsize
 An example of how to generate the alignment bam file using tophat with default parameters for single-reads:
 \scriptsize
 \begin{lstlisting}
@@ -72,7 +91,8 @@ reads1_2.fastq,reads2_2.fastq,...,readsN_2.fastq
 \end{lstlisting}
 \normalsize
 for more detail information of tophat visit the software webpage. \footnote{\url{http://tophat.cbcb.umd.edu/tutorial.html}}
-The SAM alignments are also available in \url{www.embl.de/~reyes/Graveley/bam}.
+The SAM alignments from which \Rpackage{pasilla} was generated are
+available in \url{www.embl.de/~reyes/Graveley/bam}. 
 
 \section{Exon count files}
 To generate per-exon read counts, we first needed to define the exonic regions.  
@@ -85,7 +105,8 @@ contained in pasilla/extdata. For example, for this file we would do:
 \scriptsize
 \begin{lstlisting}
 wget \
-ftp://ftp.ensembl.org/pub/release-62/gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP5.25.62.gtf.gz
+ftp://ftp.ensembl.org/pub/release-62/gtf/ \
+drosophila_melanogaster/Drosophila_melanogaster.BDGP5.25.62.gtf.gz
 
 gunzip Drosophila_melanogaster.BDGP5.25.62.gtf.gz
 python dexseq_prepare_annotation.py Drosophila_melanogaster.BDGP5.25.62.gtf \
@@ -119,7 +140,7 @@ For the file treated2.bam, which is a paired-end alignment:
 
 samtools index treated2.bam
 samtools view treated2.bam > treated2.sam
-sort -k 1,1 -k2,2n treated2.bam > treated2_sorted.bam
+sort -k 1,1 -k2,2n treated2.sam > treated2_sorted.bam
 python dexseq_count.py -p yes Dmel.BDGP5.25.62.DEXSeq.chr.gff treated2_sorted.sam treated2fb.txt
 
 \end{lstlisting}
@@ -176,7 +197,7 @@ With these, we could call the function \Rfunction{read.HTSeqCounts} to construct
 library("DEXSeq")
 ecs = read.HTSeqCounts(countfiles = file.path(inDir, paste(rownames(samples), "txt", sep=".")), 
            design = samples, 
-           aggregatefile = annotationfile)
+           flattenedfile = annotationfile)
 sampleNames(ecs) = rownames(samples)
 @ 
 
