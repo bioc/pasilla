@@ -87,7 +87,6 @@ We generated the alignment BAM file using tophat.  For the single-reads data:
 \begin{lstlisting}
 tophat bowtie_index reads1.fastq,reads2.fastq,...,readsN.fastq
 \end{lstlisting}
-\fixme{Please provide the real filenames here (reproducibility).}
   
 For the paired-end data:
 
