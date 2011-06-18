@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{Creating CountDataSet and ExonCountSet objects}
+%\VignetteIndexEntry{Data preprocessing and creation of the data objects pasillaGenes and pasillaExons}
 \documentclass{article}
 
 \usepackage{Sweave}
@@ -16,7 +16,7 @@
 \newcommand{\Rfunction}[1]{{\small\texttt{#1}}}
 \newcommand{\fixme}[1]{{\textbf{Fixme:} \textit{\textcolor{blue}{#1}}}}
 
-\title{\textsf{\textbf{Data preprocessing and object creation}}}
+\title{\textsf{\textbf{Data preprocessing and creation of the data objects pasillaGenes and pasillaExons}}}
 \author{Alejandro Reyes}
 \begin{document}
 \maketitle
