@@ -25,8 +25,12 @@ This vignette describes the steps that were followed for the generation
 of the data objects contained in the package \Rpackage{pasilla}.
 \end{abstract}
 
+\tableofcontents
+
+%--------------------------------------------------
 \section{Downloading the files}
-We use the RNA-Seq data from the publication by Brooks et al.~\cite{Brooks2010}.
+%--------------------------------------------------
+We used the RNA-Seq data from the publication by Brooks et al.~\cite{Brooks2010}.
 The experiment investigated the effect of siRNA knock-down of pasilla, a gene 
 that is known to bind to mRNA in the spliceosome, and which is thought to be involved 
 in the regulation of splicing.  The data set contains 3 biological replicates of the 
@@ -51,102 +55,98 @@ library("xtable")
 print(xtable(tab, caption = "Read numbers and alignment statistics. The column \\emph{exon counts} refers to the number of reads that could be uniquely aligned to an exon.", label="tab:samples"), file="create_objects_tabsamples.tex")
 @ 
 
-\section{File Alignment and filtering}
-The FASTQ files were aligned using TopHat version 1.2.0 with default parameters against the 
-reference Drosophila melanogaster genome.
-summarizes the read number and alignment statistics.
-Table~\ref{tab:samples} 
+%--------------------------------------------------
+\section{Read alignment and filtering}
+%--------------------------------------------------
+
+The reads in the FASTQ files were aligned using tophat version 1.2.0
+with default parameters against the reference Drosophila melanogaster
+genome.  Table~\ref{tab:samples} summarizes the read number and
+alignment statistics.
+
 \input{create_objects_tabsamples.tex}
-\subsection{How to generate an alignment with tophat}
-We can build the indexed form of a reference fasta fileto make a bowtie index that is
-required to align the reads with tophat. The reference genomic DNA fasta files can be 
-obtained directly from the ensembl ftp server.  
-\footnote{\url{http://www.ensembl.org/info/data/ftp/index.html}}. Having this we can run bowtie-build to index the
-fasta file, and we now ready to make the alignment. For more detailed information of how to generate this index
-please visit bowtie webpage \footnote{\url{http://bowtie-bio.sourceforge.net/tutorial.shtml}}.
-\scriptsize
+
+The reference genome fasta files were obtained from the Ensembl ftp 
+server\footnote{\url{http://www.ensembl.org/info/data/ftp/index.html}}. 
+We ran \texttt{bowtie-build} to index the
+fasta file. For more information on this procedure see
+the bowtie webpage\footnote{\url{http://bowtie-bio.sourceforge.net/tutorial.shtml}}.
+The indexed form is required by bowtie, and thus tophat. 
+
 \begin{lstlisting}
-wget \
-ftp://ftp.ensembl.org/pub/release-62/fasta/drosophila_melanogaster/ \
+wget ftp://ftp.ensembl.org/pub/release-62/fasta/drosophila_melanogaster/ \
 dna/Drosophila_melanogaster.BDGP5.25.62.dna_rm.toplevel.fa.gz
 
 gunzip Drosophila_melanogaster.BDGP5.25.62.dna_rm.toplevel.fa.gz
-bowtie-build Drosophila_melanogaster.BDGP5.25.62.dna_rm.toplevel.fa d_melanogaster_BDGP5.25.62
+bowtie-build Drosophila_melanogaster.BDGP5.25.62.dna_rm.toplevel.fa \
+    d_melanogaster_BDGP5.25.62
 \end{lstlisting}
-\normalsize
-An example of how to generate the alignment bam file using tophat with default parameters for single-reads:
-\scriptsize
-\begin{lstlisting}
-tophat /path/to/bowtieindex/bowtie_index \
-reads1.fastq,reads2.fastq,...,readsN.fastq
-\end{lstlisting}
-\normalsize
-And for paired ends samples:
-\scriptsize
-\begin{lstlisting}
-tophat -r inner-fragment-size
-/path/to/bowtieindex/bowtie_index \
-reads1_1.fastq,reads2_1.fastq,...,readsN_1.fastq \
-reads1_2.fastq,reads2_2.fastq,...,readsN_2.fastq
-\end{lstlisting}
-\normalsize
-for more detail information of tophat visit the software webpage. \footnote{\url{http://tophat.cbcb.umd.edu/tutorial.html}}
-The SAM alignments from which \Rpackage{pasilla} was generated are
-available in \url{www.embl.de/~reyes/Graveley/bam}. 
 
+We generated the alignment BAM file using tophat.  For the single-reads data:
+
+\begin{lstlisting}
+tophat bowtie_index reads1.fastq,reads2.fastq,...,readsN.fastq
+\end{lstlisting}
+\fixme{Please provide the real filenames here (reproducibility).}
+  
+For the paired-end data:
+
+\begin{lstlisting}
+tophat -r inner-fragment-size bowtie_index \
+    reads1_1.fastq,reads2_1.fastq,...,readsN_1.fastq \
+    reads1_2.fastq,reads2_2.fastq,...,readsN_2.fastq
+\end{lstlisting}
+
+More information on tophat is provided on its webpage\footnote{\url{http://tophat.cbcb.umd.edu/tutorial.html}}.
+The SAM alignment files from which \Rpackage{pasilla} was generated are
+available at \url{http://www.embl.de/~reyes/Graveley/bam}. 
+
+%--------------------------------------------------
 \section{Exon count files}
-To generate per-exon read counts, we first needed to define the exonic regions.  
+%--------------------------------------------------
+To generate the per-exon read counts, we first needed to define the exonic regions.  
 To this end, we downloaded the file Drosophila\_melanogaster.BDGP5.25.62.gtf.gz from 
 Ensembl\footnote{\url{ftp://ftp.ensembl.org/pub/release-62/gtf/drosophila\_melanogaster}}.
 The script \texttt{dexseq\_prepare\_annotation.py} contained in the \Rpackage{DEXSeq}
 package was used to extract the exons of the transcripts from the file, define new 
 non-overlapping exonic regions and reformat it to create the file Dmel.BDGP5.25.62.DEXSeq.chr.gff
-contained in pasilla/extdata. For example, for this file we would do:
-\scriptsize
+contained in pasilla/extdata. For example, for this file we ran:
+
 \begin{lstlisting}
-wget \
-ftp://ftp.ensembl.org/pub/release-62/gtf/ \
+wget ftp://ftp.ensembl.org/pub/release-62/gtf/ \
 drosophila_melanogaster/Drosophila_melanogaster.BDGP5.25.62.gtf.gz
 
 gunzip Drosophila_melanogaster.BDGP5.25.62.gtf.gz
 python dexseq_prepare_annotation.py Drosophila_melanogaster.BDGP5.25.62.gtf \
-   Dmel.BDGP5.25.62.DEXSeq.chr.gff
-
+    Dmel.BDGP5.25.62.DEXSeq.chr.gff
 \end{lstlisting}
-\normalsize
 
-To count the reads that fell into each non-overlapping exonic, the script 
-\texttt{dexseq\_count.py}, which is also contained in DEXSeq package, was used. 
+To count the reads that fell into each non-overlapping exonic part, the script 
+\texttt{dexseq\_count.py}, which is also contained in the \Rpackage{DEXSeq} package, was used. 
 It took the alignment results in the form of a SAM file
 (sorted by position in the case of a paired end data) and the \texttt{gtf} file 
 Dmel.BDGP5.25.62.DEXSeq.chr.gff and returned one file for each biological replicate 
-with the exon counts. For example, for the file treated1.bam, which is single-end
-alignment, we would do:
+with the exon counts. For example, for the file treated1.bam, which contained single-end
+alignments, we ran:
 
-\scriptsize
 \begin{lstlisting}
-
 samtools index treated1.bam
 samtools view treated1.bam > treated1.sam
-python dexseq_count.py Dmel.BDGP5.25.62.DEXSeq.chr.gff treated1.sam treated1fb.txt
-
+python dexseq_count.py Dmel.BDGP5.25.62.DEXSeq.chr.gff \
+    treated1.sam treated1fb.txt
 \end{lstlisting}
-\normalsize
-For the file treated2.bam, which is a paired-end alignment:
 
-\scriptsize
+For the file treated2.bam, which contained paired-end alignments:
 
 \begin{lstlisting}
-
 samtools index treated2.bam
 samtools view treated2.bam > treated2.sam
 sort -k 1,1 -k2,2n treated2.sam > treated2_sorted.bam
-python dexseq_count.py -p yes Dmel.BDGP5.25.62.DEXSeq.chr.gff treated2_sorted.sam treated2fb.txt
-
+python dexseq_count.py -p yes Dmel.BDGP5.25.62.DEXSeq.chr.gff \
+    treated2_sorted.sam treated2fb.txt
 \end{lstlisting}
 
-\normalsize
-The output of the two HTSeq python scripts is already provided in the 
+The output of the two HTSeq python scripts is provided in the 
 \Rpackage{pasilla} package:
 %
 <<pasilla,results=hide>>=
@@ -156,8 +156,8 @@ inDir = system.file("extdata", package="pasilla", mustWork=TRUE)
 dir(inDir)
 @ 
 %
-The Python scripts are built upon the HTSeq library
-\footnote{\url{http://www-huber.embl.de/users/anders/HTSeq/doc/overview.html}}
+The Python scripts are built upon the HTSeq 
+library\footnote{\url{http://www-huber.embl.de/users/anders/HTSeq/doc/overview.html}}.
   
  
 %--------------------------------------------------
