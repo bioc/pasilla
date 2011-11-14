@@ -1,6 +1,6 @@
 Package: pasilla
 Title: Data package with per-exon and per-gene read counts of RNA-seq samples of Pasilla knock-down by Brooks et al., Genome Reaearch 2011.
-Version: 0.2.8
+Version: 0.2.9
 Author: Wolfgang Huber, Alejandro Reyes
 Maintainer: Alejandro Reyes <reyes@embl.de>
 Description: This package provides per-exon and per-gene read counts
