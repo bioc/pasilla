@@ -1,6 +1,6 @@
 Package: pasilla
-Title: Data package with per-exon and per-gene read counts of RNA-seq samples of Pasilla knock-down by Brooks et al., Genome Reaearch 2011.
-Version: 0.2.10
+Title: Data package with per-exon and per-gene read counts of RNA-seq samples of Pasilla knock-down by Brooks et al., Genome Research 2011.
+Version: 0.2.11
 Author: Wolfgang Huber, Alejandro Reyes
 Maintainer: Alejandro Reyes <reyes@embl.de>
 Description: This package provides per-exon and per-gene read counts
@@ -16,5 +16,5 @@ Description: This package provides per-exon and per-gene read counts
    under accession numbers GSM461176 to GSM461181
 biocViews: ExperimentData, RNAseqData
 License: LGPL
-Depends: R (>= 2.10)
-Suggests: DESeq, DEXSeq, locfit, edgeR, xtable
+Depends: DEXSeq, DESeq
+Suggests: locfit, edgeR, xtable
