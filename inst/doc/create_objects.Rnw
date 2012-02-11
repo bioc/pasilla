@@ -41,7 +41,6 @@ The read sequences in FASTQ format were extracted from the NCBI short read archi
 (.sra files), using the sra 
 toolkit\footnote{\url{http://www.ncbi.nlm.nih.gov/books/NBK47540/\#SRA\_Download\_Guid\_B.5\_Converting\_SRA\_for}}.
 \\
-You can find the raw fastq files in \url{www.embl.de/~reyes/Graveley/fastq}.
 <<samples,echo=FALSE,results=hide>>=
 tab = data.frame(
   file = c("treated1fb", "treated2fb", "treated3fb", "untreated1fb", "untreated2fb", "untreated3fb", "untreated4fb"),
