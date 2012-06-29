@@ -166,13 +166,13 @@ z = sub("fb$", "", tab$file)
 nc = nchar(z)
 samples = data.frame(
   condition = substr(z, 1, nc-1),
-  replicate = as.integer(substr(z, nc, nc)),
+#  replicate = as.integer(substr(z, nc, nc)),
   type = tab$type,
   row.names = tab$file,
   stringsAsFactors = TRUE,
   check.names = FALSE)
 
-stopifnot(!any(is.na(samples$replicate)))
+#stopifnot(!any(is.na(samples$replicate)))
 @ 
 %$
 To create an \Rclass{ExonCountSet} object, we started with a data frame
