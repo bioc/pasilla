@@ -139,7 +139,7 @@ For the file treated2.bam, which contained paired-end alignments:
 \begin{lstlisting}
 samtools index treated2.bam
 samtools view treated2.bam > treated2.sam
-sort -k 1,1 -k2,2n treated2.sam > treated2_sorted.bam
+sort -k1,1 -k2,2n treated2.sam > treated2_sorted.sam
 python dexseq_count.py -p yes Dmel.BDGP5.25.62.DEXSeq.chr.gff \
     treated2_sorted.sam treated2fb.txt
 \end{lstlisting}
