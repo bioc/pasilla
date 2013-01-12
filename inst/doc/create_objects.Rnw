@@ -97,7 +97,7 @@ tophat -r inner-fragment-size bowtie_index \
 
 More information on tophat is provided on its webpage\footnote{\url{http://tophat.cbcb.umd.edu/tutorial.html}}.
 The SAM alignment files from which \Rpackage{pasilla} was generated are
-available at \url{http://www.embl.de/~reyes/Graveley/bam}. 
+available at \url{http://www-huber.embl.de/pub/DEXSeq/analysis/brooksetal/bam/}. 
 
 %--------------------------------------------------
 \section{Exon count files}
