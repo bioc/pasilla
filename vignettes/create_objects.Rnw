@@ -16,7 +16,7 @@
 \newcommand{\Rfunction}[1]{{\small\texttt{#1}}}
 \newcommand{\fixme}[1]{{\textbf{Fixme:} \textit{\textcolor{blue}{#1}}}}
 
-\title{\textsf{\textbf{Data preprocessing and creation of the data objects pasillaGenes and pasillaExons}}}
+\title{\textsf{\textbf{Data preprocessing and creation of the data objects auxiliary for the DEXSeq package}}}
 \author{Alejandro Reyes}
 \begin{document}
 \maketitle
@@ -159,7 +159,7 @@ library\footnote{\url{http://www-huber.embl.de/users/anders/HTSeq/doc/overview.h
   
  
 %--------------------------------------------------
-\section{Creation of the \Rclass{ExonCountSet} \Robject{pasillaExons}}
+\section{Creation of the \Rclass{DEXSeqDataSet} \Robject{dxd}}
 %--------------------------------------------------
 <<samples1, echo=FALSE>>=
 z = sub("fb$", "", tab$file)
@@ -175,7 +175,7 @@ samples = data.frame(
 #stopifnot(!any(is.na(samples$replicate)))
 @ 
 %$
-To create an \Rclass{ExonCountSet} object, we started with a data frame
+To create an \Rclass{DEXSeqDataSet} object, we started with a data frame
 \Robject{samples} that contained the sample annotations, as in
 Table~\ref{tab:samples}.
 
@@ -189,64 +189,29 @@ We also needed the annotation file with the per exon annotation.
 annotationfile = file.path(inDir, "Dmel.BDGP5.25.62.DEXSeq.chr.gff")
 @
 
-With these, we could call the function \Rfunction{read.HTSeqCounts} to construct the object \Robject{ecs}.
+With these, we could call the function \Rfunction{DEXSeqDataSet} to construct the object \Robject{dxd}.
 
 <<read, results=hide>>=
 library("DEXSeq")
-ecs = read.HTSeqCounts(countfiles = file.path(inDir, paste(rownames(samples), "txt", sep=".")), 
-           design = samples, 
-           flattenedfile = annotationfile)
-sampleNames(ecs) = rownames(samples)
+dxd = DEXSeqDataSetFromHTSeq(
+  countfiles = file.path(inDir, paste(rownames(samples), "txt", sep=".")), 
+  sampleData=samples,
+  design= ~ sample + exon + condition:exon,
+  flattenedfile = annotationfile)
 @ 
 
 We only wanted to work with data from a subset of genes, which was defined in the following file.
 %
 <<gfs>>=
 genesforsubset = readLines(file.path(inDir, "geneIDsinsubset.txt"))
-pasillaExons = subsetByGenes(ecs, genes=genesforsubset)
+dxd = dxd[geneIDs( dxd ) %in% genesforsubset,]
 @
 
-We added the experiment data:
-<<expdata>>=
-expdata = new("MIAME", 
-   name="pasilla knockdown", 
-   lab="Genetics and Developmental Biology, University of Connecticut Health Center", 
-   contact="Dr. Brenton Graveley", 
-   title="modENCODE Drosophila pasilla RNA Binding Protein RNAi knockdown RNA-Seq Studies", 
-   url="http://www.ncbi.nlm.nih.gov/projects/geo/query/acc.cgi?acc=GSE18508", 
-   abstract="RNA-seq of 3 biological replicates of from the Drosophila melanogaster 
-      S2-DRSC cells that have been RNAi depleted of mRNAs encoding pasilla, a mRNA binding 
-      protein and 4 biological replicates of the the untreated cell line.")
-   pubMedIds(expdata) <- "20921232"
-experimentData(pasillaExons) <- expdata
-@
-
-%--------------------------------------------------
-\section{Creation of the \Rclass{CountDataSet} \Robject{pasillaGenes}}
-%--------------------------------------------------
-The \Rclass{CountDataSet} class is analogous to the
-\Rclass{ExonCountSet} class; 
-the latter is specifically designed to store exon level counts,
-while the \Rclass{CountDataSet} class is useful more generally for whatever one wishes to count
-(e.\,g.\ ChIP peaks, gene levels counts).  We made use of the
-function \Rfunction{geneCountTable} from the package \Rpackage{DEXSeq} to get a data frame
-containing the number of reads falling on each of the genes. We used the function \Rfunction{newCountDataSet} to
-create the object \Robject{pasillaGenes}.
-
-<<DESeq, results=hide>>=
-library("DESeq")
-genetable = geneCountTable(ecs)
-
-pasillaGenes = newCountDataSet(genetable, 
-  conditions = samples)
-
-experimentData(pasillaGenes) = expdata
-@
+We save our objects
 
 We saved the objects in the data directory of the package:
 <<save,eval=FALSE>>=
-save(pasillaExons, file=file.path("..", "..", "data", "pasillaExons.RData"))
-save(pasillaGenes, file=file.path("..", "..", "data", "pasillaGenes.RData"))
+save(dxd, file=file.path("..", "data", "pasillaDEXSeqDataSet.RData"))
 @ 
 
 %---------------------------------------------------------
