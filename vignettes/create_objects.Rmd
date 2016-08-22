@@ -27,10 +27,10 @@ The experiment investigated the effect of siRNA knock-down of pasilla, a gene
 that is known to bind to mRNA in the spliceosome, and which is thought to be involved 
 in the regulation of splicing.  The data set contains 3 biological replicates of the 
 knockdown as well as 4 biological replicates for the untreated control. 
-Data files are publicly available in the NCBI Gene Expression Omnibus under the 
+The data files are available from the NCBI Gene Expression Omnibus under the 
 [accession GSE18508](http://www.ncbi.nlm.nih.gov/projects/geo/query/acc.cgi?acc=GSE18508). 
 The read sequences in FASTQ format were extracted from the NCBI short read archive file 
-(.sra files), using the SRA toolkit.
+(.sra files) using the SRA toolkit.
 
 # Read alignment and filtering
 
@@ -38,18 +38,12 @@ The reads in the FASTQ files were aligned using `tophat` version 1.2.0
 with default parameters against the reference Drosophila melanogaster
 genome.  The following table summarizes the read number and
 alignment statistics.
-The column `exon counts` refers to the number of reads that could be uniquely aligned to an exon.
+The column `exon.counts` refers to the number of reads that could be uniquely aligned to an exon.
 
 ```{r samples}
-tab = data.frame(
-  file = c("treated1fb", "treated2fb", "treated3fb", "untreated1fb", "untreated2fb", "untreated3fb", "untreated4fb"),
-  type = c("single-read", "paired-end", "paired-end", "single-read", "single-read", "paired-end", "paired-end"),
-  "number of lanes" = as.integer(c(5,2,2,2,6,2,2)),
-  "total number of reads" = c("35158667", "12242535 (x2)", "12443664 (x2)", "17812866", "34284521", "10542625 (x2)", "12214974 (x 2)"),
-  "exon counts" = as.integer(c(15679615, 15620018, 12733865, 14924838, 20764558, 10283129, 11653031)),
-  stringsAsFactors = TRUE,
-  check.names = FALSE)
-tab
+dataFilesDir = system.file("extdata", package = "pasilla", mustWork=TRUE)
+pasillaSampleAnno = read.csv(file.path(dataFilesDir, "pasilla_sample_annotation.csv"))
+pasillaSampleAnno
 ```
 
 The reference genome fasta files were obtained from the 
@@ -71,15 +65,15 @@ bowtie-build Drosophila_melanogaster.BDGP5.25.62.dna_rm.toplevel.fa \
 We generated the alignment BAM file using `tophat`.  For the single-reads data:
 
 ```{sh tophat1, eval = FALSE}
-tophat bowtie_index reads1.fastq,reads2.fastq,...,readsN.fastq
+tophat bowtie_index <filename>1.fastq,<filename>2.fastq,...,<filename>N.fastq
 ```
   
 For the paired-end data:
 
 ```{sh tophat2, eval = FALSE}
 tophat -r inner-fragment-size bowtie_index \
-    reads1_1.fastq,reads2_1.fastq,...,readsN_1.fastq \
-    reads1_2.fastq,reads2_2.fastq,...,readsN_2.fastq
+    <filename>1_1.fastq,<filename>2_1.fastq,...,<filename>N_1.fastq \
+    <filename>1_2.fastq,<filename>2_2.fastq,...,<filename>N_2.fastq
 ```
 
 The SAM alignment files from which `r Biocpkg("pasilla")` was generated 
@@ -133,10 +127,8 @@ python dexseq_count.py -p yes Dmel.BDGP5.25.62.DEXSeq.chr.gff \
 The output of the two HTSeq python scripts is provided in the 
 `r Biocpkg("pasilla")` package:
 
-```{r pasilla, results = "hide"}
-library("pasilla")
-inDir = system.file("extdata", package="pasilla", mustWork=TRUE)
-dir(inDir)
+```{r dirextData}
+dir(system.file("extdata", package = "pasilla", mustWork=TRUE), pattern = ".txt$")
 ```
  
 The Python scripts are built upon the
@@ -144,50 +136,40 @@ The Python scripts are built upon the
  
 # Creation of the DEXSeqDataSet dxd
 
-```{r samples1}
-z = sub("fb$", "", tab$file)
-nc = nchar(z)
-samples = data.frame(
-  condition = substr(z, 1, nc-1),
-  type = tab$type,
-  row.names = tab$file,
-  stringsAsFactors = TRUE,
-  check.names = FALSE)
-```
-
-To create a DEXSeqDataSet object, we started with a data frame
-`samples` that contained the sample annotations, as in the above table.
-
-```{r samples2}
-head(samples)
-``` 
-
-We also needed the annotation file with the per exon annotation.
+To create a DEXSeqDataSet object, we need the count files, the sample annotations,
+and the GFF file with the per exon annotation.
 
 ```{r ecs}
-annotationfile = file.path(inDir, "Dmel.BDGP5.25.62.DEXSeq.chr.gff")
+gffFile = file.path(dataFilesDir, "Dmel.BDGP5.25.62.DEXSeq.chr.gff")
 ```
 
 With these, we could call the function `DEXSeqDataSet` to construct the object `dxd`.
 
-```{r read, results = "hide", message = FALSE, warning = FALSE}
+```{r read, message = FALSE, warning = FALSE}
 library("DEXSeq")
-dxd = DEXSeqDataSetFromHTSeq(
-  countfiles = file.path(inDir, paste(rownames(samples), "txt", sep=".")), 
-  sampleData=samples,
+dx = DEXSeqDataSetFromHTSeq(
+  countfiles = file.path(dataFilesDir, paste(pasillaSampleAnno$file, "txt", sep=".")), 
+  sampleData = pasillaSampleAnno,
   design= ~ sample + exon + condition:exon,
-  flattenedfile = annotationfile)
+  flattenedfile = gffFile)
+dx  
 ```
+
+```{r weird, echo = FALSE}
+stopifnot(ncol(dx)==14)
+```
+<font color="red">FIXME: why does dx have 14 rows and not 7?</font>
+
 
 We only wanted to work with data from a subset of genes, which was defined in the following file.
 
 
 ```{r dxd}
-genesforsubset = readLines(file.path(inDir, "geneIDsinsubset.txt"))
-dxd = dxd[geneIDs( dxd ) %in% genesforsubset,]
+genesforsubset = readLines(file.path(dataFilesDir, "geneIDsinsubset.txt"))
+dxd = dx[geneIDs( dxd ) %in% genesforsubset,]
 ```
 
-We saved the objects in the data directory of the package:
+We saved the R objects in the data directory of the package:
 ```{r save, eval = FALSE}
 save(dxd, file = file.path("..", "data", "pasillaDEXSeqDataSet.RData"))
 ```
