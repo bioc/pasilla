@@ -1,8 +1,8 @@
 ---
 title: "Data preprocessing and creation of the data objects pasillaGenes and pasillaExons"
 author: "Alejandro Reyes"
-date: "`r doc_date()`"
-package: "`r pkg_ver('pasilla')`"
+date: "`r BiocStyle::doc_date()`"
+package: "`r BiocStyle::pkg_ver('pasilla')`"
 output:
   BiocStyle::html_document:
     toc: true
@@ -13,10 +13,11 @@ vignette: >
   %\usepackage[utf8]{inputenc}
 abstract: >
   This vignette describes the steps that were followed for the generation 
-  of the data objects contained in the package `r Biocpkg("pasilla")`.
+  of the data objects contained in the package `r BiocStyle::Biocpkg("pasilla")`.
 ---
 
 ```{r setup, echo = FALSE}
+library(BiocStyle)
 knitr::opts_chunk$set(tidy = FALSE, cache = TRUE, autodep = TRUE)
 ```
 
@@ -147,26 +148,20 @@ With these, we could call the function `DEXSeqDataSet` to construct the object `
 
 ```{r read, message = FALSE, warning = FALSE}
 library("DEXSeq")
-dx = DEXSeqDataSetFromHTSeq(
+dxd = DEXSeqDataSetFromHTSeq(
   countfiles = file.path(dataFilesDir, paste(pasillaSampleAnno$file, "txt", sep=".")), 
   sampleData = pasillaSampleAnno,
   design= ~ sample + exon + condition:exon,
   flattenedfile = gffFile)
-dx  
+dxd 
 ```
-
-```{r weird, echo = FALSE}
-stopifnot(ncol(dx)==14)
-```
-<font color="red">FIXME: why does dx have 14 rows and not 7?</font>
-
 
 We only wanted to work with data from a subset of genes, which was defined in the following file.
 
 
 ```{r dxd}
 genesforsubset = readLines(file.path(dataFilesDir, "geneIDsinsubset.txt"))
-dxd = dx[geneIDs( dxd ) %in% genesforsubset,]
+dxd = dxd[geneIDs( dxd ) %in% genesforsubset,]
 ```
 
 We saved the R objects in the data directory of the package:
